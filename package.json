@@ -27,20 +27,12 @@
     },
     "commands": [
       {
-        "command": "simplellm.showContext",
-        "title": "SimpleLLM: showContext"
-      },
-      {
         "command": "simplellm.ask",
         "title": "SimpleLLM: ask"
       },
       {
-        "command": "simplellm.clear",
-        "title": "SimpleLLM: clear"
-      },
-      {
         "command": "simplellm.generate",
-        "title": "SimpleLLM: Generate"
+        "title": "SimpleLLM: generate"
       }
     ]
   },
