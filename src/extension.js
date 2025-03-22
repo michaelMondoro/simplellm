@@ -122,7 +122,8 @@ class MyCodeLensProvider {
         for (let i = 0; i < document.lineCount; i++) {
             let line = document.lineAt(i).text;
             let key = hash(line);
-            if (Object.keys(hovers).includes(key)) {
+
+            if (Object.keys(hovers).includes(key) && line.trim().length > 0) {
                 const codeLensRange = document.lineAt(i).range;
                 codeLenses.push(new vscode.CodeLens(codeLensRange, {
                     title: "AI Context",

@@ -35,3 +35,5 @@ function checkConfig() {
 }
 
 module.exports = { checkConfig, getUrl, hash}
+
+
