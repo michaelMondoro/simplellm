@@ -93,7 +93,7 @@ function activate(context) {
     // Function to manually clear AI context
     let clear = vscode.commands.registerCommand('simplellm.clear', async function (key) {
         if (!key) {
-            vscode.window.showErrorMessage('nothing to clear');
+            vscode.window.showErrorMessage('ok 😎');
             return;
         }
         delete hovers[key];
@@ -103,7 +103,7 @@ function activate(context) {
     // Function to manually show hover
     let showContext = vscode.commands.registerCommand('simplellm.showContext',(line, pos, result) => {
         if (!line) {
-            vscode.window.showErrorMessage("nothing to show"); 
+            vscode.window.showErrorMessage("nothing here 🙀"); 
             return;
         }
         showHover(line,pos,result);

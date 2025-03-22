@@ -69,7 +69,7 @@ async function ask(prompt, type) {
     if (context) prompt = `${context} : ${prompt}`;
     return vscode.window.withProgress({
         location: vscode.ProgressLocation.Window,
-        title: "asking...",
+        title: "asking 😎 ...",
         cancellable: false
     }, async () => {
         try {
@@ -84,4 +84,4 @@ async function ask(prompt, type) {
     
 }
 
-module.exports = { ask, generate, CODE_INSTRUCTION}
+module.exports = { ask, CODE_INSTRUCTION}
