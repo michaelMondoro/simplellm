@@ -15,7 +15,7 @@
     "Education",
     "Programming Languages"
   ],
-  "activationEvents": ["onLanguage:*"],
+  "activationEvents": ["onDocumentOpen"],
   "main": "./src/extension.js",
   "contributes": {
     "configuration": {
