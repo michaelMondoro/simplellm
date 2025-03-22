@@ -4,6 +4,7 @@
   "description": "Extension for interacting with HuggingFace LLMs",
   "repository": "https://github.com/michaelMondoro/simplellm",
   "type": "commonjs",
+  "publisher": "mikeymon",
   "version": "0.0.5",
   "engines": {
     "vscode": "^1.96.0"
