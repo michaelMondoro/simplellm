@@ -108,6 +108,16 @@ function activate(context) {
 }
 
 
+function showHover(lineNum, position, result) {
+    const lineText = vscode.window.activeTextEditor.document.lineAt(lineNum).text;
+    const key = hash(lineText);
+    hovers[key] = {data: result, position: position};
+    vscode.window.activeTextEditor.selection = new vscode.Selection(position, position);
+    vscode.commands.executeCommand('editor.action.showHover');
+}
+
+function deactivate() {}
+
 class MyCodeLensProvider {
     constructor() {
         this._onDidChangeCodeLenses = new vscode.EventEmitter();
@@ -145,17 +155,6 @@ class MyCodeLensProvider {
         this._onDidChangeCodeLenses.fire();
     }
 }
-
-
-function showHover(lineNum, position, result) {
-    const lineText = vscode.window.activeTextEditor.document.lineAt(lineNum).text;
-    const key = hash(lineText);
-    hovers[key] = {data: result, position: position};
-    vscode.window.activeTextEditor.selection = new vscode.Selection(position, position);
-    vscode.commands.executeCommand('editor.action.showHover');
-}
-
-function deactivate() {}
 
 module.exports = {
     activate,
