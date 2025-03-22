@@ -1,21 +1,13 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { generate, ask, create, CODE_INSTRUCTION } = require('./commands.js');
-const { checkConfig, getUrl } = require("./utils.js");
+const { checkConfig, getUrl, hash } = require("./utils.js");
 
 let hovers = {}
 
 function activate(context) {
-    let clear = vscode.commands.registerCommand('simplellm.clear', async function (key) {
-        if (!key) {
-            vscode.window.showErrorMessage('nothing to clear');
-            return;
-        }
-        delete hovers[key];
-        codeLensProvider.refresh();
-    })
+    let codeLensProvider = new MyCodeLensProvider();
 
     let simplellmAsk = vscode.commands.registerCommand('simplellm.ask', async function () {
         try {
@@ -28,16 +20,22 @@ function activate(context) {
             if (prompt) {
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Window,
-                    title: "Asking...",
+                    title: "Asking the Robots...",
                     cancellable: false
                 }, async (progress) => {
-                    const position = vscode.window.activeTextEditor?.selection.active;
                     const selection = vscode.window.activeTextEditor?.selection;
-                    const lineText = vscode.window.activeTextEditor?.document.lineAt(selection.start.line).text;
+                    const startLine = selection.start.line;
+                    const endLine = selection.end.line;
 
-                    const result = await ask(prompt);
-                    
-                    showHover(selection.start.line, selection.start, result);
+                    const result = await ask(prompt, "QUESTION");
+                    let realLine = startLine;
+                    for (let i = startLine; i <= endLine; i++) {
+                        if (vscode.window.activeTextEditor?.document.lineAt(i).text.trim().length > 0) {
+                            realLine = i;
+                            break;
+                        }
+                    }
+                    showHover(realLine, selection.start, result);
                     codeLensProvider.refresh();
                 });
             }
@@ -46,9 +44,37 @@ function activate(context) {
         }
     })
 
-    let codeLensProvider = new MyCodeLensProvider();
-    // Register CodeLens providers for accessing AI 
-    let codeLensProviderDisposable = vscode.languages.registerCodeLensProvider('*', codeLensProvider)
+    let simplellmGenerate = vscode.commands.registerCommand('simplellm.generate', async function () {
+        try {
+            checkConfig();
+            let prompt = await vscode.window.showInputBox({
+                prompt: "Enter your prompt for the LLM",
+                placeHolder: "What would you like to create?"
+            });
+        
+            if (prompt) {
+                vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Window,
+                    title: "Coding...",
+                    cancellable: false
+                }, async (progress) => {
+                    const result = await ask(prompt, "CODE");
+
+                    const editor = vscode.window.activeTextEditor;
+                    if (editor) {
+                        const position = editor.selection.active;
+                        editor.edit(editBuilder => {
+                            editBuilder.insert(editor.selection.active, result.split('\n').slice(1, -1).join('\n'));
+                        });
+                    } else {
+                        vscode.window.showInformationMessage(`LLM Response: ${result.split('\n').slice(1, -1).join('\n')}`);    
+                    }
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    })
     
     // Register hover provider for displaying AI responses
     let hoverProvider = vscode.languages.registerHoverProvider('*', {
@@ -64,7 +90,17 @@ function activate(context) {
         }
     })
 
-    // Register function to manually show hover
+    // Function to manually clear AI context
+    let clear = vscode.commands.registerCommand('simplellm.clear', async function (key) {
+        if (!key) {
+            vscode.window.showErrorMessage('nothing to clear');
+            return;
+        }
+        delete hovers[key];
+        codeLensProvider.refresh();
+    })
+
+    // Function to manually show hover
     let showContext = vscode.commands.registerCommand('simplellm.showContext',(line, pos, result) => {
         if (!line) {
             vscode.window.showErrorMessage("nothing to show"); 
@@ -72,6 +108,9 @@ function activate(context) {
         }
         showHover(line,pos,result);
     })
+
+    // Register CodeLens providers for accessing AI 
+    let codeLensProviderDisposable = vscode.languages.registerCodeLensProvider('*', codeLensProvider)
 
     context.subscriptions.push(simplellmAsk);
     context.subscriptions.push(clear);
@@ -114,15 +153,11 @@ class MyCodeLensProvider {
         return codeLenses;
     }
 
-    // Method to manually trigger a refresh
     refresh() {
         this._onDidChangeCodeLenses.fire();
     }
 }
 
-function hash(str) {
-    return crypto.createHash('sha256').update(str).digest('hex');
-}
 
 function showHover(lineNum, position, result) {
     const lineText = vscode.window.activeTextEditor.document.lineAt(lineNum).text;

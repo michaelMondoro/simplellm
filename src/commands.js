@@ -61,7 +61,7 @@ async function chat(message, url) {
  */
 async function generate(prompt) {
     try {
-        const result = await create(prompt)
+        const result = await aks(prompt, "CODE")
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const position = editor.selection.active;
@@ -69,7 +69,8 @@ async function generate(prompt) {
                 editBuilder.insert(editor.selection.active, result.split('\n').slice(1, -1).join('\n'));
             });
         } else {
-            vscode.window.showInformationMessage(`LLM Response: ${result}`);    
+            console.log(result.split('\n').slice(1, -1).join('\n'))
+            vscode.window.showInformationMessage(`LLM Response: \n\n${result.split('\n').slice(1, -1).join('\n')}`);    
         }
         return result;
     } catch (error) {
@@ -81,7 +82,7 @@ async function generate(prompt) {
  * Ask the model a question with selected text as context
  * @param {string} prompt 
  */
-async function ask(prompt) {
+async function ask(prompt, type) {
     const context = getContext();
     if (context) prompt = `${context} : ${prompt}`;
     return vscode.window.withProgress({
@@ -90,7 +91,7 @@ async function ask(prompt) {
         cancellable: false
     }, async () => {
         try {
-            const result = await chat(`${prompt} : ${ASK_INSTRUCTION}`, getUrl());
+            const result = await chat(`${prompt} : ${type == "CODE" ? CODE_INSTRUCTION : ASK_INSTRUCTION}`, getUrl());
             // vscode.window.showInformationMessage(`${result}`);    
             return result;
         } catch (error) {
@@ -101,16 +102,4 @@ async function ask(prompt) {
     
 }
 
-async function create(prompt) {
-    try {
-        const context = getContext();
-        if (context) prompt = `${context} : ${prompt}`;
-
-        const result = await chat(`${prompt} : ${CODE_INSTRUCTION}`, getUrl());   
-        return result;
-    } catch (error) {
-        vscode.window.showErrorMessage(`Error: ${error.message}`);
-    }
-}
-
-module.exports = { ask, generate, create, CODE_INSTRUCTION}
+module.exports = { ask, generate, CODE_INSTRUCTION}

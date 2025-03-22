@@ -15,7 +15,7 @@
     "Programming Languages"
   ],
   "activationEvents": ["onLanguage:*"],
-  "main": "./extension.js",
+  "main": "./src/extension.js",
   "contributes": {
     "configuration": {
       "simplellm.model_url": {

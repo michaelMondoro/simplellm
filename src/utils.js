@@ -1,4 +1,14 @@
 const vscode = require('vscode');
+const crypto = require('crypto');
+
+/**
+ * Create simple hash of a string value
+ * @param {value to hash} str 
+ * @returns hashed value
+ */
+function hash(str) {
+    return crypto.createHash('sha256').update(str).digest('hex');
+}
 
 /**
  * Get model endpoint from config setting
@@ -24,4 +34,4 @@ function checkConfig() {
     }
 }
 
-module.exports = { checkConfig, getUrl }
+module.exports = { checkConfig, getUrl, hash}
