@@ -80,7 +80,7 @@ function activate(context) {
     // Function to manually clear AI context
     let clear = vscode.commands.registerCommand('simplellm.clear', async function (key) {
         if (!key) {
-            vscode.window.showErrorMessage('ok 😎');
+            vscode.window.showErrorMessage('clear 😎');
             return;
         }
         delete hovers[key];
