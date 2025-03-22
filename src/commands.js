@@ -4,6 +4,10 @@ const { getUrl } = require('./utils');
 CODE_INSTRUCTION = "you are an expert software developer that ONLY writes code. Nothing else."
 ASK_INSTRUCTION = "please be brief"
 
+/**
+ * Gets the current text selection to use for context in LLM prompt
+ * @returns current selected text as context
+ */
 function getContext() {
     const editor = vscode.window.activeTextEditor;
     if (editor && !editor.selection.isEmpty) {
@@ -12,6 +16,7 @@ function getContext() {
         return context;
     } 
 }
+
 /**
  * Send API request to HuggingFace model
  * @param {string} message 
@@ -20,7 +25,7 @@ function getContext() {
  */
 async function chat(message, url) {
     try {
-        // First request
+        // initiate query
         const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -38,7 +43,7 @@ async function chat(message, url) {
     const data = await response.json();
     const eventId = data.event_id;
   
-    // Second request
+    // Read response
     const streamResponse = await fetch(`${url}/${eventId}`);
     if (!streamResponse.ok) {
         throw new Error(`HTTP error! status: ${streamResponse.status}`);
@@ -52,29 +57,6 @@ async function chat(message, url) {
         return resData[0];
     } catch (error) {
         console.error('Error:', error);
-    }
-}
-
-/**
- * Generate code
- * @param {string} prompt 
- */
-async function generate(prompt) {
-    try {
-        const result = await aks(prompt, "CODE")
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            const position = editor.selection.active;
-            editor.edit(editBuilder => {
-                editBuilder.insert(editor.selection.active, result.split('\n').slice(1, -1).join('\n'));
-            });
-        } else {
-            console.log(result.split('\n').slice(1, -1).join('\n'))
-            vscode.window.showInformationMessage(`LLM Response: \n\n${result.split('\n').slice(1, -1).join('\n')}`);    
-        }
-        return result;
-    } catch (error) {
-        vscode.window.showErrorMessage(`Error: ${error.message}`);
     }
 }
 
