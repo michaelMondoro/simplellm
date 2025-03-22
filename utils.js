@@ -24,4 +24,4 @@ function checkConfig() {
     }
 }
 
-module.exports = { checkConfig, getUrl, getWebviewContent }
+module.exports = { checkConfig, getUrl }

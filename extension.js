@@ -8,9 +8,11 @@ const { checkConfig, getUrl } = require("./utils.js");
 let hovers = {}
 
 function activate(context) {
-    let clear = vscode.commands.registerCommand('simplellm.clear', async function (line) {
-        if (!line) vscode.window.showErrorMessage('nothing to clear');
-        const key = hash(line)
+    let clear = vscode.commands.registerCommand('simplellm.clear', async function (key) {
+        if (!key) {
+            vscode.window.showErrorMessage('nothing to clear');
+            return;
+        }
         delete hovers[key];
         codeLensProvider.refresh();
     })
@@ -105,7 +107,7 @@ class MyCodeLensProvider {
                 codeLenses.push(new vscode.CodeLens(codeLensRange, {
                     title: "Clear",
                     command: "simplellm.clear",
-                    arguments: [line]
+                    arguments: [key]
                 }));
             }
         }
