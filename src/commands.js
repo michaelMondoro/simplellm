@@ -69,7 +69,7 @@ async function ask(prompt, type) {
     if (context) prompt = `${context} : ${prompt}`;
     return vscode.window.withProgress({
         location: vscode.ProgressLocation.Window,
-        title: "asking 😎 ...",
+        title: type == "CODE" ? "coding with robots 🤖 ..." : "asking the robots 🤖 ...",
         cancellable: false
     }, async () => {
         try {

@@ -18,26 +18,20 @@ function activate(context) {
             });
         
             if (prompt) {
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Window,
-                    title: "Asking the Robots...",
-                    cancellable: false
-                }, async (progress) => {
-                    const selection = vscode.window.activeTextEditor?.selection;
-                    const startLine = selection.start.line;
-                    const endLine = selection.end.line;
+                const selection = vscode.window.activeTextEditor?.selection;
+                const startLine = selection.start.line;
+                const endLine = selection.end.line;
 
-                    const result = await ask(prompt, "QUESTION");
-                    let realLine = startLine;
-                    for (let i = startLine; i <= endLine; i++) {
-                        if (vscode.window.activeTextEditor?.document.lineAt(i).text.trim().length > 0) {
-                            realLine = i;
-                            break;
-                        }
+                const result = await ask(prompt, "QUESTION");
+                let realLine = startLine;
+                for (let i = startLine; i <= endLine; i++) {
+                    if (vscode.window.activeTextEditor?.document.lineAt(i).text.trim().length > 0) {
+                        realLine = i;
+                        break;
                     }
-                    showHover(realLine, selection.start, result);
-                    codeLensProvider.refresh();
-                });
+                }
+                showHover(realLine, selection.start, result);
+                codeLensProvider.refresh();
             }
         } catch (error) {
             console.error(error);
@@ -53,23 +47,16 @@ function activate(context) {
             });
         
             if (prompt) {
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Window,
-                    title: "Coding...",
-                    cancellable: false
-                }, async (progress) => {
-                    const result = await ask(prompt, "CODE");
-
-                    const editor = vscode.window.activeTextEditor;
-                    if (editor) {
-                        const position = editor.selection.active;
-                        editor.edit(editBuilder => {
-                            editBuilder.insert(editor.selection.active, result.split('\n').slice(1, -1).join('\n'));
-                        });
-                    } else {
-                        vscode.window.showInformationMessage(`LLM Response: ${result.split('\n').slice(1, -1).join('\n')}`);    
-                    }
-                });
+                const result = await ask(prompt, "CODE");
+                const editor = vscode.window.activeTextEditor;
+                if (editor) {
+                    const position = editor.selection.active;
+                    editor.edit(editBuilder => {
+                        editBuilder.insert(editor.selection.active, result.split('\n').slice(1, -1).join('\n'));
+                    });
+                } else {
+                    vscode.window.showInformationMessage(`LLM Response: ${result.split('\n').slice(1, -1).join('\n')}`);    
+                }
             }
         } catch (error) {
             console.error(error);
