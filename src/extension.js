@@ -9,6 +9,27 @@ let hovers = {}
 function activate(context) {
     let codeLensProvider = new MyCodeLensProvider();
 
+    let createFile = vscode.commands.registerCommand('simplellm.create', async function () {
+        const fileName = await vscode.window.showInputBox({ prompt: 'Enter file name' });
+        if (!fileName) return;
+
+        let prompt = await vscode.window.showInputBox({
+            prompt: "Enter your prompt for the LLM",
+            placeHolder: "What would you like to create?"
+        });
+        if (prompt === undefined) return;
+
+        const result = await ask(prompt, "CODE");
+
+        const filePath = path.join(vscode.workspace.rootPath || '', fileName);
+        const dirPath = path.dirname(filePath);
+
+        fs.mkdirSync(dirPath, { recursive: true });
+        fs.writeFileSync(filePath, result.split('\n').slice(1, -1).join('\n'));
+
+        vscode.window.showInformationMessage(`File created ${filePath} successfully!`);
+    });
+
     let simplellmAsk = vscode.commands.registerCommand('simplellm.ask', async function () {
         try {
             checkConfig();
@@ -100,6 +121,7 @@ function activate(context) {
     let codeLensProviderDisposable = vscode.languages.registerCodeLensProvider('*', codeLensProvider)
 
     context.subscriptions.push(simplellmAsk);
+    context.subscriptions.push(createFile);
     context.subscriptions.push(clear);
     context.subscriptions.push(showContext);
     context.subscriptions.push(codeLensProviderDisposable);

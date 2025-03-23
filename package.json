@@ -33,6 +33,10 @@
       {
         "command": "simplellm.generate",
         "title": "SimpleLLM: generate"
+      },
+      {
+        "command": "simplellm.create",
+        "title": "SimpleLLM: create"
       }
     ]
   },
