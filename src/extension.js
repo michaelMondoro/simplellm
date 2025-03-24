@@ -91,7 +91,7 @@ function activate(context) {
             const key = hash(lineText);
             const hoverData = hovers[key];
             if (hoverData) {
-                markdown = new vscode.MarkdownString(`<span style="color:var(--vscode-charts-green);">AI Context</span>  \\\n${hoverData.data}`);
+                markdown = new vscode.MarkdownString(`<span style="color:var(--vscode-charts-green);">AI Context</span> \\\n${hoverData.data}`);
                 markdown.isTrusted = true;
                 return new vscode.Hover(markdown);
             }
