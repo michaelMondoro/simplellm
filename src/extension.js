@@ -27,7 +27,7 @@ function activate(context) {
         fs.mkdirSync(dirPath, { recursive: true });
         fs.writeFileSync(filePath, result.split('\n').slice(1, -1).join('\n'));
 
-        vscode.window.showInformationMessage(`File created ${filePath} successfully!`);
+        vscode.window.showInformationMessage(`${filePath} created successfully!`);
     });
 
     let simplellmAsk = vscode.commands.registerCommand('simplellm.ask', async function () {
