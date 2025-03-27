@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { getUrl } = require('./utils');
+const { getUrl, parseSSE } = require('./utils');
 
 CODE_INSTRUCTION = "you are an expert software developer that ONLY writes code. Nothing else."
 ASK_INSTRUCTION = "please be brief"
@@ -27,36 +27,42 @@ async function chat(message, url) {
     try {
         // initiate query
         const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            data: [message, '']
-        })
-    });
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                data: [message, '']
+            })
+        });
   
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-  
-    const data = await response.json();
-    const eventId = data.event_id;
-  
-    // Read response
-    const streamResponse = await fetch(`${url}/${eventId}`);
-    if (!streamResponse.ok) {
-        throw new Error(`HTTP error! status: ${streamResponse.status}`);
-    }
-  
-    let result = '';
-    for await (const chunk of streamResponse.body) {
-        result += new TextDecoder().decode(chunk);
-    }
-        let resData = JSON.parse(result.slice(result.indexOf('['), result.length));
-        return resData[0];
+        if (!response.ok) {
+            vscode.window.showErrorMessage(`(${response.status}) error querying model`); 
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        const data = await response.json();
+        
+        const eventId = data.event_id;
+    
+        // Read response
+        const streamResponse = await fetch(`${url}/${eventId}`);
+        if (!streamResponse.ok) {
+            vscode.window.showErrorMessage(`(${response.status}) error reading response from model`); 
+            throw new Error(`HTTP error! status: ${streamResponse.status}`);
+        }
+    
+        let responses = [];
+        for await (const chunk of streamResponse.body) {
+            responses.push(new TextDecoder().decode(chunk));
+        }
+            let rawRes = responses.pop();
+            let parsedRes = parseSSE(rawRes)
+            console.log(parsedRes)
+            return parsedRes[0].data[0];
     } catch (error) {
         console.error('Error:', error);
+        vscode.window.showErrorMessage(error); 
     }
 }
 
