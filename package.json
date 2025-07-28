@@ -5,7 +5,7 @@
   "repository": "https://github.com/michaelMondoro/simplellm",
   "type": "commonjs",
   "publisher": "mikeymon",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -21,10 +21,10 @@
   "main": "./src/extension.js",
   "contributes": {
     "configuration": {
-      "simplellm.model_url": {
+      "simplellm.model": {
         "type": "string",
         "default": false,
-        "description": "URL of huggingface space hosting your model"
+        "description": "Name of the Ollama model you would like to use"
       }
     },
     "commands": [
@@ -52,7 +52,5 @@
     "@types/vscode": "^1.96.0",
     "eslint": "^9.16.0"
   },
-  "dependencies": {
-    "axios": "^1.7.9"
-  }
+  "dependencies": {}
 }
