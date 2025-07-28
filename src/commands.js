@@ -1,8 +1,46 @@
 const vscode = require('vscode');
-const { getUrl, parseSSE } = require('./utils');
 
 CODE_INSTRUCTION = "you are an expert software developer that ONLY writes code. Nothing else."
 ASK_INSTRUCTION = "please be brief"
+
+async function askOllama(prompt) {
+    if (!prompt) return;
+
+    // Change model name as needed
+    var outputChannel = null;
+    const model = vscode.workspace.getConfiguration('simplellm').get("model");
+    const url = "http://localhost:11434/api/generate";
+    const body = JSON.stringify({ model, prompt });
+	const decoder = new TextDecoder('utf-8');
+    const emptySelection = vscode.window.activeTextEditor?.selection.isEmpty;
+
+    if (emptySelection) {
+        outputChannel = vscode.window.createOutputChannel('Ollama');
+        outputChannel.show();
+    }
+    
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: body
+        });
+        
+		const reader = res.body.getReader();
+		var result = "";
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			var realVal = JSON.parse(decoder.decode(value, {stream: true}))["response"];
+			if (emptySelection) outputChannel.replace(`[${model}] ${result}`);
+            result += realVal;
+		}
+        
+    } catch (err) {
+        console.error("Error: " + (err.message || String(err)));
+    }
+    return result;
+}
 
 /**
  * Gets the current text selection to use for context in LLM prompt
@@ -18,55 +56,6 @@ function getContext() {
 }
 
 /**
- * Send API request to HuggingFace model
- * @param {string} message 
- * @param {string} url 
- * @returns model response
- */
-async function chat(message, url) {
-    try {
-        // initiate query
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                data: [message, '']
-            })
-        });
-  
-        if (!response.ok) {
-            vscode.window.showErrorMessage(`(${response.status}) error querying model`); 
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
-        const data = await response.json();
-        
-        const eventId = data.event_id;
-    
-        // Read response
-        const streamResponse = await fetch(`${url}/${eventId}`);
-        if (!streamResponse.ok) {
-            vscode.window.showErrorMessage(`(${response.status}) error reading response from model`); 
-            throw new Error(`HTTP error! status: ${streamResponse.status}`);
-        }
-    
-        let responses = [];
-        for await (const chunk of streamResponse.body) {
-            responses.push(new TextDecoder().decode(chunk));
-        }
-            let rawRes = responses.pop();
-            let parsedRes = parseSSE(rawRes)
-            console.log(parsedRes)
-            return parsedRes[0].data[0];
-    } catch (error) {
-        console.error('Error:', error);
-        vscode.window.showErrorMessage(error); 
-    }
-}
-
-/**
  * Ask the model a question with selected text as context
  * @param {string} prompt 
  */
@@ -79,7 +68,7 @@ async function ask(prompt, type) {
         cancellable: false
     }, async () => {
         try {
-            const result = await chat(`${prompt} : ${type == "CODE" ? CODE_INSTRUCTION : ASK_INSTRUCTION}`, getUrl());
+            const result = await askOllama(`${prompt} : ${type == "CODE" ? CODE_INSTRUCTION : ASK_INSTRUCTION}`);
             // vscode.window.showInformationMessage(`${result}`);    
             return result;
         } catch (error) {
@@ -90,4 +79,4 @@ async function ask(prompt, type) {
     
 }
 
-module.exports = { ask, CODE_INSTRUCTION}
+module.exports = { ask, askOllama, CODE_INSTRUCTION}

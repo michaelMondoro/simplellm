@@ -1,8 +1,8 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { generate, ask, create, CODE_INSTRUCTION } = require('./commands.js');
-const { checkConfig, getUrl, hash } = require("./utils.js");
+const { ask } = require('./commands.js');
+const { checkConfig, hash } = require("./utils.js");
 
 let hovers = {}
 
@@ -45,13 +45,15 @@ function activate(context) {
 
                 const result = await ask(prompt, "QUESTION");
                 let realLine = startLine;
-                for (let i = startLine; i <= endLine; i++) {
-                    if (vscode.window.activeTextEditor?.document.lineAt(i).text.trim().length > 0) {
-                        realLine = i;
-                        break;
+                if (!selection.isEmpty) {
+                    for (let i = startLine; i <= endLine; i++) {
+                        if (vscode.window.activeTextEditor?.document.lineAt(i).text.trim().length > 0) {
+                            realLine = i;
+                            break;
+                        }
                     }
+                    showHover(realLine, selection.start, result);
                 }
-                showHover(realLine, selection.start, result);
                 codeLensProvider.refresh();
             }
         } catch (error) {
