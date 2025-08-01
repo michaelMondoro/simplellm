@@ -1,7 +1,7 @@
 {
   "name": "simplellm",
   "displayName": "simplellm",
-  "description": "Extension for interacting with HuggingFace LLMs",
+  "description": "Extension for interacting with Ollama LLMs",
   "repository": "https://github.com/michaelMondoro/simplellm",
   "type": "commonjs",
   "publisher": "mikeymon",
