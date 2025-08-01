@@ -9,7 +9,7 @@ async function askOllama(prompt) {
     // Change model name as needed
     var outputChannel = null;
     const model = vscode.workspace.getConfiguration('simplellm').get("model");
-    const url = "http://localhost:11434/api/generate";
+    const url = vscode.workspace.getConfiguration('simplellm').get("url") || "http://localhost:11434/api/generate";
     const body = JSON.stringify({ model, prompt });
 	const decoder = new TextDecoder('utf-8');
     const emptySelection = vscode.window.activeTextEditor?.selection.isEmpty;
